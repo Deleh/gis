@@ -109,7 +109,7 @@ for dir in $git_dirs; do
             status_char="${status:0:1}"
             [[ "$status_keys" != *"$status_char"* ]] && status_keys="${status_keys}${status_char}"
         fi
-    done < <(git status -sb --porcelain)
+    done < <(git status --short --branch --porcelain)
     status_keys="${status_keys}${remote_status_keys}"
 
     # Beautify status
