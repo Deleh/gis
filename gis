@@ -63,11 +63,9 @@ if [ "$fetch" == true ]; then
         repository_name=$(basename "$dir")
         echo "  - $repository_name"
 
-        git fetch --prune --all 1> /dev/null 2>  >(trap "" INT TERM; sed "s/^/${text_bold}${text_red}${repository_name}${text_reset} /" >&2) &
+        git fetch --prune --all 1> /dev/null 2>  >(trap "" INT TERM; sed "s/^/${text_bold}${repository_name}${text_reset} /" >&2) &
         fetch_pids+=("$!")
     done
-
-    echo
 
     for pid in "${fetch_pids[@]}"; do
         wait "$pid"
