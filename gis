@@ -80,11 +80,15 @@ for dir in $git_dirs; do
     # Get repository name
     repository_name=$(basename "$dir")
 
-    # Get origin head
-    [[ $(git symbolic-ref refs/remotes/origin/HEAD) =~ \/([^\/]*)$ ]] &>/dev/null && origin_head="${BASH_REMATCH[1]}"
-
     # Get current branch
     current_branch=$(git branch --show-current)
+
+    # Get origin head
+    if git symbolic-ref refs/remotes/origin/HEAD > /dev/null 2>&1; then
+        [[ $(git symbolic-ref refs/remotes/origin/HEAD) =~ \/([^\/]*)$ ]] &>/dev/null && origin_head="${BASH_REMATCH[1]}"
+    else
+        origin_head="$current_branch"
+    fi
 
     status_keys=""
 
