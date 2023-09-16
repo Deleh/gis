@@ -1,0 +1,149 @@
+#!/usr/bin/env bash
+
+# Text formatting variables
+text_reset=$'\e[0m'
+text_bold=$'\e[1m'
+text_green=$'\e[32m'
+text_red=$'\e[31m'
+text_yellow=$'\e[33m'
+
+function print_usage {
+    cat <<EOF
+Usage: gis [OPTIONS] [PATHS] ...
+
+Get status information about all Git repositories in PATHS.
+The current work directory is used if none is given.
+
+OPTIONS
+  -f, --fetch  Execute 'git fetch --prune --all' for all repositories in PATHS
+  -h, --help   Show this help message and exit
+EOF
+    exit
+}
+
+# Parse arguments
+fetch=false
+while (( "$#" )); do
+    case "$1" in
+        -f|--fetch)
+            fetch=true
+            shift
+            ;;
+        -h|--help)
+            print_usage
+            ;;
+        -*)
+            echo "${text_bold}${text_red}Unsupported flag${text_reset} $1"
+            shift
+            ;;
+        *)
+            paths+=("$(realpath "$1")")
+            shift
+            ;;
+    esac
+done
+
+# Add current work directory to paths if none is given
+if [ "${paths[*]}" == "" ]; then
+    paths=("$(pwd)")
+fi
+
+# Find Git repositories
+for path in "${paths[@]}"; do
+    git_dirs+="$(find "$path" -type d -name ".git" -exec dirname {} \;) "
+done
+
+# Fetch Git repositories via background processes
+if [ "$fetch" == true ]; then
+    echo "Fetching"
+    for dir in $git_dirs; do
+        cd "$dir" || echo "Failed to cd into ${text_bold}${text_red}${dir}${text_reset}"
+
+        # Get repository name
+        repository_name=$(basename "$dir")
+        echo "  - $repository_name"
+
+        git fetch --prune --all 1> /dev/null 2>  >(trap "" INT TERM; sed "s/^/${text_bold}${text_red}${repository_name}${text_reset} /" >&2) &
+        fetch_pids+=("$!")
+    done
+
+    for pid in "${fetch_pids[@]}"; do
+        wait "$pid"
+    done
+    echo
+fi
+
+# Get Git status of all directories
+for dir in $git_dirs; do
+    cd "$dir" || echo "Failed to cd into ${text_bold}${text_red}${dir}${text_reset}"
+    
+    # Get repository name
+    repository_name=$(basename "$dir")
+
+    # Get origin head
+    [[ $(git symbolic-ref refs/remotes/origin/HEAD) =~ \/([^\/]*)$ ]] &>/dev/null && origin_head="${BASH_REMATCH[1]}"
+
+    # Get current branch
+    current_branch=$(git branch --show-current)
+
+    status_keys=""
+
+    # Check stash
+    if [[ $(git stash list) ]]; then
+        status_keys="${status_keys}\$"
+    fi
+
+    # Get status
+    remote_status_keys=""
+    while read -r status; do
+        if [[ "$status" =~ ^\#\#.*\[(.*)\] ]]; then
+            [[ "${BASH_REMATCH[1]}" == *"ahead"* ]] && [[ "${BASH_REMATCH[1]}" == *"behind"* ]] && remote_status_keys="⇕" && continue
+            [[ "${BASH_REMATCH[1]}" == *"ahead"* ]] && remote_status_keys="⇡" && continue
+            [[ "${BASH_REMATCH[1]}" == *"behind"* ]] && remote_status_keys="⇣" && continue
+            [[ "${BASH_REMATCH[1]}" == *"gone"* ]] && remote_status_keys="✗" && continue
+        elif [[ "$status" != "#"* ]]; then
+            status_char="${status:0:1}"
+            [[ "$status_keys" != *"$status_char"* ]] && status_keys="${status_keys}${status_char}"
+        fi
+    done < <(git status -sb)
+    status_keys="${status_keys}${remote_status_keys}"
+
+    # Beautify status
+    status_keys="${status_keys//A/+}"
+    status_keys="${status_keys//M/!}"
+
+    # Update all status keys
+    all_status_keys="${all_status_keys}${status_keys}"
+    
+    # Construct key output
+    if [[ "$status_keys" ]]; then
+        status_keys="${text_bold}${text_red}[${status_keys}]${text_reset}"
+    else
+        status_keys="${text_bold}${text_green}[✓]${text_reset}"
+    fi
+
+    output="${output}${repository_name};${status_keys}"
+
+    # Construct branch output
+    if [ "$current_branch" = "$origin_head" ]; then
+        output="${output};${text_bold}${current_branch}${text_reset}\n"
+    else
+        output="${output};${text_bold}${text_yellow}${current_branch}${text_reset}\n"        
+    fi
+    
+done
+
+# Print keys
+if [[ "$all_status_keys" ]]; then
+    echo "Keys"
+    [[ "$all_status_keys" == *"\$"* ]] && echo "  ${text_bold}${text_red}\$${text_reset} - Dirty stash"
+    [[ "$all_status_keys" == *"?"* ]] && echo "  ${text_bold}${text_red}?${text_reset} - Untracked files"
+    [[ "$all_status_keys" == *"!"* ]] && echo "  ${text_bold}${text_red}!${text_reset} - Local changes"
+    [[ "$all_status_keys" == *"+"* ]] && echo "  ${text_bold}${text_red}+${text_reset} - Staged changes"
+    [[ "$all_status_keys" == *"⇕"* ]] && echo "  ${text_bold}${text_red}⇕${text_reset} - Diverged from upstream"
+    [[ "$all_status_keys" == *"⇡"* ]] && echo "  ${text_bold}${text_red}⇡${text_reset} - Ahead upstream"
+    [[ "$all_status_keys" == *"⇣"* ]] && echo "  ${text_bold}${text_red}⇣${text_reset} - Behind upstream"
+    [[ "$all_status_keys" == *"✗"* ]] && echo "  ${text_bold}${text_red}✗${text_reset} - Upstream gone"
+    echo
+fi
+echo -e "$output" | column -s ";" -t
