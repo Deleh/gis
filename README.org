@@ -3,6 +3,10 @@
 
 /gis/ is a Bash script which shows status information about multiple Git repositories.
 
+It was inspired by [[https://wiki.ros.org/wstool][wstool]], [[https://github.com/dirk-thomas/vcstool][vcstool]] and the default [[https://starship.rs/][Starship]] prompt.
+
+[[./screenshot.png]]
+
 * Usage
 
   #+begin_example
