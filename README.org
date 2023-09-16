@@ -1,0 +1,27 @@
+#+title: gis
+#+subtitle: Get status information about multiple Git repositories
+
+/gis/ is a Bash script which shows status information about multiple Git repositories.
+
+* Usage
+
+  #+begin_example
+    Usage: gis [OPTIONS] [PATHS] ...
+
+    Get status information about all Git repositories in PATHS.
+    The current work directory is used if none is given.
+
+    OPTIONS
+      -f, --fetch  Execute 'git fetch --prune --all' for all repositories in PATHS
+      -h, --help   Show this help message and exit
+  #+end_example
+
+* Installation
+
+  Place the =gis= script somewhere in your =$PATH= *or* use the provided =install.{bash,zsh}= scripts.
+  Those will create a symlink in =~/.local/bin= and update the respective =~/.{bash,zsh}rc=.
+
+** Nix Flake
+
+   This repository is also a [[https://nixos.wiki/wiki/Flakes][Nix Flake]].
+   /gis/ is provided as package under =github:Deleh/gis#gis=.
