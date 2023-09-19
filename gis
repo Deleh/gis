@@ -45,12 +45,14 @@ while (( "$#" )); do
 done
 
 # Add $GIS_PATH or current work directory to paths if none is given
-if [ "$GIS_PATH" ]; then
-    OLDIFS=$IFS
-    IFS=":" read -r -a paths <<< "$GIS_PATH"
-    IFS=$OLDIFS
-elif [ "${paths[*]}" == "" ]; then
-    paths=("$(pwd)")
+if [ "${paths[*]}" == "" ]; then
+    if [ "$GIS_PATH" ]; then
+        OLDIFS=$IFS
+        IFS=":" read -r -a paths <<< "$GIS_PATH"
+        IFS=$OLDIFS
+    else
+        paths=("$(pwd)")
+    fi
 fi
 
 # Find Git repositories
