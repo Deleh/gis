@@ -12,7 +12,7 @@ It was inspired by [[https://wiki.ros.org/wstool][wstool]], [[https://github.com
   #+begin_example
     Usage: gis [OPTIONS] [PATHS] ...
 
-    Get status information about all Git repositories in PATHS.
+    Show a status summary of all Git repositories in PATHS.
     The colon-seperated environment variable $GIS_PATH is used if no PATH is given.
     If the variable isn't set, the current work directory is used.
 
