@@ -1,5 +1,5 @@
 {
-  description = "Get status information about multiple Git repositories";
+  description = "Show a status summary of multiple Git repositories";
   outputs = { self, nixpkgs }@inputs:
     let
       forAllSystems = nixpkgs.lib.genAttrs nixpkgs.lib.platforms.unix;
