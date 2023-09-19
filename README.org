@@ -1,7 +1,7 @@
 #+title: gis
 #+subtitle: Get status information about multiple Git repositories
 
-/gis/ is a Bash script which shows status information about multiple Git repositories.
+/gis/ is a Bash script which shows a status summary of multiple Git repositories.
 
 It was inspired by [[https://wiki.ros.org/wstool][wstool]], [[https://github.com/dirk-thomas/vcstool][vcstool]] and the default [[https://starship.rs/][Starship]] prompt.
 
@@ -13,7 +13,8 @@ It was inspired by [[https://wiki.ros.org/wstool][wstool]], [[https://github.com
     Usage: gis [OPTIONS] [PATHS] ...
 
     Get status information about all Git repositories in PATHS.
-    The current work directory is used if none is given.
+    The colon-seperated environment variable $GIS_PATH is used if no PATH is given.
+    If the variable isn't set, the current work directory is used.
 
     OPTIONS
       -f, --fetch  Execute 'git fetch --prune --all' for all repositories in PATHS
