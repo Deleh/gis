@@ -12,7 +12,8 @@ function print_usage {
 Usage: gis [OPTIONS] [PATHS] ...
 
 Get status information about all Git repositories in PATHS.
-The current work directory is used if none is given.
+The colon-seperated environment variable \$GIS_PATH is used if no PATH is given.
+If the variable isn't set, the current work directory is used.
 
 OPTIONS
   -f, --fetch  Execute 'git fetch --prune --all' for all repositories in PATHS
@@ -43,8 +44,12 @@ while (( "$#" )); do
     esac
 done
 
-# Add current work directory to paths if none is given
-if [ "${paths[*]}" == "" ]; then
+# Add $GIS_PATH or current work directory to paths if none is given
+if [ "$GIS_PATH" ]; then
+    OLDIFS=$IFS
+    IFS=":" read -r -a paths <<< "$GIS_PATH"
+    IFS=$OLDIFS
+elif [ "${paths[*]}" == "" ]; then
     paths=("$(pwd)")
 fi
 
