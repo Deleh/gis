@@ -15,7 +15,7 @@ echo "Created link '~/.local/bin/gis'"
 
 # Modify bashrc
 touch ~/.bashrc
-_add_to_config "export PATH=\$PATH:/home/${USER}/.local/bin"
+_add_to_config "export PATH=\$PATH:${HOME}/.local/bin"
 echo "Updated '~/.bashrc'"
 
 echo
