@@ -2,7 +2,7 @@
 
 # Adds $1 to ~/.zshrc if not already present
 function _add_to_config {
-    if ! grep "$1" ~/.zshrv > /dev/null; then
+    if ! grep "$1" ~/.zshrc > /dev/null; then
         echo "$1" >> ~/.zshrc
     fi
 }
