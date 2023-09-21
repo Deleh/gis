@@ -3,6 +3,7 @@
 # Text formatting variables
 text_reset=$'\e[0m'
 text_bold=$'\e[1m'
+text_blue=$'\e[34m'
 text_green=$'\e[32m'
 text_red=$'\e[31m'
 text_yellow=$'\e[33m'
@@ -56,21 +57,30 @@ if [ "${paths[*]}" == "" ]; then
 fi
 
 # Find Git repositories
+git_dirs=()
 for path in "${paths[@]}"; do
-    git_dirs+="$(find "$path" -type d -name ".git" -exec dirname {} \; | sort) "
+    readarray -t found_git_dirs < <(find "$path" -type d -name ".git" -exec dirname {} \; | sort)
+    git_dirs+=("${found_git_dirs[@]}")
 done
 
-# Fetch Git repositories via background processes
+# Fetch Git repositories
 if [ "$fetch" == true ]; then
-    echo "Fetching"
-    for dir in $git_dirs; do
+
+    if [ "${#git_dirs[@]}" -eq 1 ]; then
+        suffix="y"
+    else
+        suffix="ies"
+    fi
+    echo "${text_bold}${text_blue}Fetching${text_reset} ${#git_dirs[@]} repositor${suffix}"
+
+    for dir in "${git_dirs[@]}"; do
         cd "$dir" || echo "Failed to cd into ${text_bold}${text_red}${dir}${text_reset}"
 
         # Get repository name
         repository_name=$(basename "$dir")
-        echo "  - $repository_name"
 
-        git fetch --prune --all 1> /dev/null 2>  >(trap "" INT TERM; sed "s/^/${text_bold}${repository_name}${text_reset} /" >&2) &
+        # Fetch all Git repositories in background
+        git fetch --prune --all 1> /dev/null 2>  >(trap "" INT TERM; sed "s/^/${text_bold}${text_blue}${repository_name}${text_reset} /" >&2) &
         fetch_pids+=("$!")
     done
 
@@ -81,9 +91,9 @@ if [ "$fetch" == true ]; then
 fi
 
 # Get Git status of all directories
-for dir in $git_dirs; do
+for dir in "${git_dirs[@]}"; do
     cd "$dir" || echo "Failed to cd into ${text_bold}${text_red}${dir}${text_reset}"
-    
+
     # Get repository name
     repository_name=$(basename "$dir")
 
@@ -127,7 +137,7 @@ for dir in $git_dirs; do
 
     # Update all status keys
     all_status_keys="${all_status_keys}${status_keys}"
-    
+
     # Construct key output
     if [[ "$status_keys" ]]; then
         status_keys="${text_bold}${text_red}[${status_keys}]${text_reset}"
