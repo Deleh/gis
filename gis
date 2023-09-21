@@ -5,6 +5,7 @@ text_reset=$'\e[0m'
 text_bold=$'\e[1m'
 text_blue=$'\e[34m'
 text_green=$'\e[32m'
+text_magenta=$'\e[35m'
 text_red=$'\e[31m'
 text_yellow=$'\e[33m'
 
@@ -18,6 +19,8 @@ If the variable isn't set, the current work directory is used.
 
 OPTIONS
   -f, --fetch  Execute 'git fetch --prune --all' for all repositories in PATHS
+  -p, --pull   Execute 'git pull' for all repositories which are behind upstream
+               in PATHS (includes '--fetch')
   -h, --help   Show this help message and exit
 EOF
     exit
@@ -25,10 +28,16 @@ EOF
 
 # Parse arguments
 fetch=false
+pull=false
 while (( "$#" )); do
     case "$1" in
         -f|--fetch)
             fetch=true
+            shift
+            ;;
+        -p|--pull)
+            fetch=true
+            pull=true
             shift
             ;;
         -h|--help)
@@ -85,6 +94,43 @@ if [ "$fetch" == true ]; then
     done
 
     for pid in "${fetch_pids[@]}"; do
+        wait "$pid"
+    done
+    echo
+fi
+
+# Pull Git repositories
+if [ "$pull" == true ]; then
+
+    # Get Git repositories which are behind upstream
+    for dir in "${git_dirs[@]}"; do
+        cd "$dir" || echo "Failed to cd into ${text_bold}${text_red}${dir}${text_reset}"
+
+        branch_status=$(git status --short --branch --porcelain | head -n 1)
+        if [[ "$branch_status" =~ ^\#\#.*\[behind.*\] ]]; then
+            pull_dirs+=("$dir")
+        fi
+    done
+
+    if [ "${#pull_dirs[@]}" -eq 1 ]; then
+        suffix="y"
+    else
+        suffix="ies"
+    fi
+    echo "${text_bold}${text_magenta}Pulling${text_reset} ${#pull_dirs[@]} repositor${suffix}"
+
+    # Pull all Git repositories which are behind upstream in background
+    for dir in "${pull_dirs[@]}"; do
+        cd "$dir" || echo "Failed to cd into ${text_bold}${text_red}${dir}${text_reset}"
+
+        # Get repository name
+        repository_name=$(basename "$dir")
+
+        git pull 1> /dev/null 2>  >(trap "" INT TERM; sed "s/^/${text_bold}${text_magenta}${repository_name}${text_reset} /" >&2) &
+        pull_pids+=("$!")
+    done
+
+    for pid in "${pull_pids[@]}"; do
         wait "$pid"
     done
     echo
