@@ -151,14 +151,14 @@ for dir in "${git_dirs[@]}"; do
     if [ "$current_branch" = "$origin_head" ]; then
         output="${output};${text_bold}${current_branch}${text_reset}\n"
     else
-        output="${output};${text_bold}${text_yellow}${current_branch}${text_reset}\n"        
+        output="${output};${text_bold}${text_yellow}${current_branch}${text_reset} (${origin_head}${text_reset})\n"
     fi
-    
+
 done
 
 # Print keys
 if [[ "$all_status_keys" ]]; then
-    echo "Keys"
+    echo "${text_bold}Status${text_reset}"
     [[ "$all_status_keys" == *"\$"* ]] && echo "  ${text_bold}${text_red}\$${text_reset} - Dirty stash"
     [[ "$all_status_keys" == *"?"* ]] && echo "  ${text_bold}${text_red}?${text_reset} - Untracked files"
     [[ "$all_status_keys" == *"!"* ]] && echo "  ${text_bold}${text_red}!${text_reset} - Local changes"
