@@ -19,7 +19,7 @@ It was inspired by [[https://wiki.ros.org/wstool][wstool]], [[https://github.com
     OPTIONS
       -f, --fetch  Execute 'git fetch --prune --all' for all repositories in PATHS
       -p, --pull   Execute 'git pull' for all repositories which are behind upstream
-                   in PATHS (includes '--fetch')
+                   in PATHS
       -h, --help   Show this help message and exit
   #+end_example
 

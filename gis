@@ -20,7 +20,7 @@ If the variable isn't set, the current work directory is used.
 OPTIONS
   -f, --fetch  Execute 'git fetch --prune --all' for all repositories in PATHS
   -p, --pull   Execute 'git pull' for all repositories which are behind upstream
-               in PATHS (includes '--fetch')
+               in PATHS
   -h, --help   Show this help message and exit
 EOF
     exit
@@ -36,7 +36,6 @@ while (( "$#" )); do
             shift
             ;;
         -p|--pull)
-            fetch=true
             pull=true
             shift
             ;;
