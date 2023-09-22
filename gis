@@ -23,7 +23,7 @@ OPTIONS
                in PATHS
   -h, --help   Show this help message and exit
 EOF
-    exit
+    exit "$1"
 }
 
 # Parse arguments
@@ -40,11 +40,11 @@ while (( "$#" )); do
             shift
             ;;
         -h|--help)
-            print_usage
+            print_usage 0
             ;;
         -*)
-            echo "${text_bold}${text_red}Unsupported flag${text_reset} $1"
-            shift
+            echo -e "${text_bold}${text_red}Unsupported flag${text_reset} $1\n"
+            print_usage 1
             ;;
         *)
             paths+=("$(realpath "$1")")
