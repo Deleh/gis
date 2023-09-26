@@ -11,19 +11,26 @@ text_yellow=$'\e[33m'
 
 function print_usage {
     cat <<EOF
-Usage: gis [OPTIONS] [PATHS] ...
+Usage: gis [COMMANDS] [OPTIONS]
 
-Show a status summary of all Git repositories in PATHS.
-The colon-seperated environment variable \$GIS_PATH is used if no PATH is given.
-If the variable isn't set, the current work directory is used.
+Show a status summary of all Git repositories which are found recursively in
+current work directory. If the colon-separated environment variable \$GIS_PATH
+is set, the declared directories will be used instead.
+
+COMMANDS
+  fetch  Execute 'git fetch --prune --all' for all found repositories
+  pull   Execute 'git pull' for all found repositories which are behind upstream
 
 OPTIONS
-  -f, --fetch  Execute 'git fetch --prune --all' for all repositories in PATHS
-  -p, --pull   Execute 'git pull' for all repositories which are behind upstream
-               in PATHS
-  -h, --help   Show this help message and exit
+  -p, --path  PATH  Use PATH for searching Git repositories
+  -h, --help        Show this help message and exit
 EOF
-    exit "$1"
+}
+
+function error {
+    echo -e "${text_bold}${text_red}ERROR${text_reset} $1\n"
+    print_usage
+    exit 1
 }
 
 # Parse arguments
@@ -31,24 +38,37 @@ fetch=false
 pull=false
 while (( "$#" )); do
     case "$1" in
-        -f|--fetch)
+        -p|--path)
+            if [ -n "$2" ] && [ "${2:0:1}" != "-" ]; then
+                paths+=("$(realpath "$2")")
+                shift 2
+            else
+                error "Argument for ${text_bold}$1${text_reset} is missing"
+            fi
+            ;;
+        -h|--help)
+            print_usage
+            exit 0
+            ;;
+        -*)
+            error "Unsupported option ${text_bold}$1${text_bold}"
+            ;;
+        fetch)
             fetch=true
             shift
             ;;
-        -p|--pull)
+        f*)
+            error "Unsupported command ${text_bold}$1${text_reset}, did you mean ${text_bold}fetch${text_reset}?"
+            ;;
+        pull)
             pull=true
             shift
             ;;
-        -h|--help)
-            print_usage 0
-            ;;
-        -*)
-            echo -e "${text_bold}${text_red}Unsupported flag${text_reset} $1\n"
-            print_usage 1
+        p*)
+            error "Unsupported command ${text_bold}$1${text_reset}, did you mean ${text_bold}pull${text_reset}?"
             ;;
         *)
-            paths+=("$(realpath "$1")")
-            shift
+            error "Unsupported command ${text_bold}$1${text_reset}"
             ;;
     esac
 done
