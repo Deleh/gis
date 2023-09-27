@@ -27,8 +27,18 @@ It was inspired by [[https://wiki.ros.org/wstool][wstool]], [[https://github.com
 
 * Installation
 
-  Place the =gis= script somewhere in your =$PATH= *or* use the provided =install.{bash,zsh}= scripts.
-  Those will create a symlink in =~/.local/bin= and update the respective =~/.{bash,zsh}rc=.
+  Place the =gis= script in your =$PATH=.
+  To use the autocompletion feature source the =gis_completion.bash= script.
+
+  On ZSH additionally the =compinit= and =bashcompinit= modules must be loaded before sourcing the completion script:
+
+  #+begin_src sh
+    autoload -U +X compinit && compinit
+    autoload -U +X bashcompinit && bashcompinit
+  #+end_src
+
+  Alternatively, installation scripts for Bash (=install.bash=) and ZSH (=install.zsh=) are provided which will link the two files to =~/.local/{bin/gis,share/bash-completion/completions/gis}= and add the corresponding entries to =~/.bashrc= or =~/.zshrc=.
+  Further updates of /gis/ require just =git pull=.
 
 ** Nix Flake
 
