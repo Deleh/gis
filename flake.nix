@@ -17,6 +17,7 @@
               src = self;
               installPhase = ''
                 install -m 755 -D gis $out/bin/gis
+                install -m 644 -D gis_completion.bash $out/share/bash-completion/completions/gis
               '';
             };
             default = self.packages.${system}.gis;
