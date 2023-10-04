@@ -11,7 +11,7 @@ text_yellow=$'\e[33m'
 
 function print_usage {
     cat <<EOF
-Usage: gis [COMMANDS] [OPTIONS]
+Usage: gis [OPTIONS] [COMMAND]
 
 Show a status summary of all Git repositories which are found recursively in
 current work directory. If the colon-separated environment variable \$GIS_PATH
@@ -19,7 +19,8 @@ is set, the declared directories will be used instead.
 
 COMMANDS
   fetch  Execute 'git fetch --prune --all' for all found repositories
-  pull   Execute 'git pull' for all found repositories which are behind upstream
+  pull   Execute 'git pull' for all found repositories which are behind
+         upstream, includes 'gis fetch'
 
 OPTIONS
   -p, --path  PATH  Use PATH for searching Git repositories
@@ -61,6 +62,7 @@ while (( "$#" )); do
             error "Unsupported command ${text_bold}$1${text_reset}, did you mean ${text_bold}fetch${text_reset}?"
             ;;
         pull)
+            fetch=true
             pull=true
             shift
             ;;
