@@ -10,7 +10,7 @@ It was inspired by [[https://wiki.ros.org/wstool][wstool]], [[https://github.com
 * Usage
 
   #+begin_example
-    Usage: gis [COMMANDS] [OPTIONS]
+    Usage: gis [OPTIONS] [COMMAND]
 
     Show a status summary of all Git repositories which are found recursively in
     current work directory. If the colon-separated environment variable $GIS_PATH
@@ -18,7 +18,8 @@ It was inspired by [[https://wiki.ros.org/wstool][wstool]], [[https://github.com
 
     COMMANDS
       fetch  Execute 'git fetch --prune --all' for all found repositories
-      pull   Execute 'git pull' for all found repositories which are behind upstream
+      pull   Execute 'git pull' for all found repositories which are behind
+             upstream, includes 'gis fetch'
 
     OPTIONS
       -p, --path  PATH  Use PATH for searching Git repositories
