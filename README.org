@@ -52,6 +52,8 @@ It was inspired by [[https://wiki.ros.org/wstool][wstool]], [[https://github.com
 
 * Syntax
 
+** Status Keys
+
   #+begin_example
     $ - Dirty stash
     ? - Untracked files
@@ -65,6 +67,8 @@ It was inspired by [[https://wiki.ros.org/wstool][wstool]], [[https://github.com
     ✗ - Upstream gone
   #+end_example
 
+** Branches
+
   Branches which don't have the same name as the =origin/HEAD= reference are highlighted in yellow.
   You can manually check on which branch you working tree is on by executing the following command:
   : git symbolic-ref refs/remotes/origin/HEAD
@@ -75,3 +79,5 @@ It was inspired by [[https://wiki.ros.org/wstool][wstool]], [[https://github.com
 
   Or set it manually to any branch with:
   : git remote set-head origin <branch_name>  
+
+  The number of additional local branches which are neither checked out, nor the =origin/HEAD= branch, is appended at the end of the branch output, e.g. =(+8)=.
