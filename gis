@@ -174,6 +174,10 @@ for dir in "${git_dirs[@]}"; do
         origin_head="$current_branch"
     fi
 
+    # Get number of additional local branches
+    num_branches=$(git branch | wc -l)
+    num_additional_branches=$(( num_branches - 1 ))
+
     status_keys=""
 
     # Check stash
@@ -216,10 +220,16 @@ for dir in "${git_dirs[@]}"; do
 
     # Construct branch output
     if [ "$current_branch" = "$origin_head" ]; then
-        output="${output};${text_bold}${current_branch}${text_reset}\n"
+        output="${output};${text_bold}${current_branch}${text_reset}"
     else
-        output="${output};${text_bold}${text_yellow}${current_branch}${text_reset} (${origin_head}${text_reset})\n"
+        num_additional_branches=$(( num_additional_branches - 1 ))
+        output="${output};${text_bold}${text_yellow}${current_branch}${text_reset} (${origin_head}${text_reset})"
     fi
+    if [[ $num_additional_branches -gt 0 ]]; then
+        output="${output} (+${num_additional_branches})"
+    fi
+
+    output="${output}\n"
 
 done
 
