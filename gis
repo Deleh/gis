@@ -110,7 +110,7 @@ if [ "$fetch" == true ]; then
         repository_name=$(basename "$dir")
 
         # Fetch all Git repositories in background
-        git fetch --prune --all 1> /dev/null 2>  >(trap "" INT TERM; sed "s/^/${text_bold}${text_blue}${repository_name}${text_reset} /" >&2) &
+        git fetch --prune --all 1> /dev/null 2>  >(trap 'kill $! 2> /dev/null' INT TERM; sed "s/^/${text_bold}${text_blue}${repository_name}${text_reset} /" >&2) &
         fetch_pids+=("$!")
     done
 
@@ -147,7 +147,7 @@ if [ "$pull" == true ]; then
         # Get repository name
         repository_name=$(basename "$dir")
 
-        git pull 1> /dev/null 2>  >(trap "" INT TERM; sed "s/^/${text_bold}${text_magenta}${repository_name}${text_reset} /" >&2) &
+        git pull 1> /dev/null 2>  >(trap 'kill $! 2> /dev/null' INT TERM; sed "s/^/${text_bold}${text_magenta}${repository_name}${text_reset} /" >&2) &
         pull_pids+=("$!")
     done
 
