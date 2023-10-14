@@ -112,7 +112,6 @@ if [ "$fetch" == true ]; then
         # Fetch all Git repositories in background
         git fetch --prune --all 1> /dev/null 2>  >(trap "" INT TERM; sed "s/^/${text_bold}${text_blue}${repository_name}${text_reset} /" >&2) &
         fetch_pids+=("$!")
-        trap 'kill $!' INT
     done
 
     for pid in "${fetch_pids[@]}"; do
@@ -150,7 +149,6 @@ if [ "$pull" == true ]; then
 
         git pull 1> /dev/null 2>  >(trap "" INT TERM; sed "s/^/${text_bold}${text_magenta}${repository_name}${text_reset} /" >&2) &
         pull_pids+=("$!")
-        trap 'kill $!' INT
     done
 
     for pid in "${pull_pids[@]}"; do
