@@ -44,3 +44,29 @@ It was inspired by [[https://wiki.ros.org/wstool][wstool]], [[https://github.com
 
    This repository is also a [[https://nixos.wiki/wiki/Flakes][Nix Flake]].
    /gis/ is provided as package under =github:Deleh/gis#gis=.
+
+* Syntax
+
+  #+begin_example
+    $ - Dirty stash
+    ? - Untracked files
+    ! - Local changes
+    + - Staged changes
+    - - File removed
+    = - Both modified
+    ⇕ - Diverged from upstream
+    ⇡ - Ahead upstream
+    ⇣ - Behind upstream
+    ✗ - Upstream gone
+  #+end_example
+
+  Branches which don't have the same name as the =origin/HEAD= reference are highlighted in yellow.
+  You can manually check on which branch you working tree is on by executing the following command:
+  : git symbolic-ref refs/remotes/origin/HEAD
+
+  Note, that the reference gets only set when the repository is initially cloned and doesn't update with =git fetch=.
+  It can be updated manually like this:
+  : git remote set-head origin -a
+
+  Or set it manually to any branch with:
+  : git remote set-head origin <branch_name>  
