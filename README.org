@@ -26,6 +26,12 @@ It was inspired by [[https://wiki.ros.org/wstool][wstool]], [[https://github.com
       -h, --help        Show this help message and exit
   #+end_example
 
+* Dependencies
+
+  - At least Bash =v4=
+  - BSD =column=
+  - Git
+
 * Installation
 
 ** Manual
