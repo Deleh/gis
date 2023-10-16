@@ -75,7 +75,7 @@ while (( "$#" )); do
     esac
 done
 
-# Add $GIS_PATH or current work directory to paths if none is given
+# Add $GIS_PATH, current Git repository or current work directory to paths if none is given
 if [ "${paths[*]}" == "" ]; then
     if [ "$GIS_PATH" ]; then
         OLDIFS=$IFS
@@ -90,6 +90,14 @@ fi
 git_dirs=()
 for path in "${paths[@]}"; do
     readarray -t found_git_dirs < <(find "$path" -type d -name ".git" -exec dirname {} \; | sort)
+
+    # Check if inside of a repository if none found
+    if [ "${#found_git_dirs[@]}" -eq 0 ]; then
+        if git rev-parse > /dev/null 2>&1; then
+            found_git_dirs+=("$(git rev-parse --show-toplevel)")
+        fi
+    fi
+
     git_dirs+=("${found_git_dirs[@]}")
 done
 
