@@ -80,7 +80,7 @@ It was inspired by [[https://wiki.ros.org/wstool][wstool]], [[https://github.com
   : git symbolic-ref refs/remotes/origin/HEAD
 
   Note, that the reference gets only set when the repository is initially cloned and doesn't update with =git fetch=.
-  It can be updated manually like this:
+  It can be updated like this:
   : git remote set-head origin -a
 
   Or set it manually to any branch with:
