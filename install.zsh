@@ -20,7 +20,7 @@ touch ~/.zshrc
 _add_to_config "export PATH=\$PATH:${HOME}/.local/bin"
 _add_to_config "autoload -U +X compinit && compinit"
 _add_to_config "autoload -U +X bashcompinit && bashcompinit"
-_add_to_config "source /home/${USER}/.local/share/bash-completion/completions/gis"
+_add_to_config "source ${HOME}/.local/share/bash-completion/completions/gis"
 echo "Updated '~/.zshrc'"
 
 echo
