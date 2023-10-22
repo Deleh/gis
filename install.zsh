@@ -10,9 +10,9 @@ function _add_to_config {
 # Link files
 basedir="$(dirname "$(realpath "$0")")"
 mkdir -p ~/.local/{bin,share/bash-completion/completions}
-ln -frs "${basedir}/gis" ~/.local/bin/gis
+ln -fs "${basedir}/gis" ~/.local/bin/gis
 echo "Created link '~/.local/bin/gis'"
-ln -frs "${basedir}/gis_completion.bash" ~/.local/share/bash-completion/completions/gis
+ln -fs "${basedir}/gis_completion.bash" ~/.local/share/bash-completion/completions/gis
 echo "Created link '~/.local/share/bash-completion/completions/gis'"
 
 # Modify config
@@ -20,7 +20,7 @@ touch ~/.zshrc
 _add_to_config "export PATH=\$PATH:${HOME}/.local/bin"
 _add_to_config "autoload -U +X compinit && compinit"
 _add_to_config "autoload -U +X bashcompinit && bashcompinit"
-_add_to_config "source /home/${USER}/.local/share/bash-completion/completions/gis"
+_add_to_config "source ${HOME}/.local/share/bash-completion/completions/gis"
 echo "Updated '~/.zshrc'"
 
 echo
