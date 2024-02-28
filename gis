@@ -197,8 +197,12 @@ for dir in "${git_dirs[@]}"; do
 
     # Get status
     remote_status_keys=""
+    has_upstream=true
     while read -r status; do
-        if [[ "$status" =~ ^\#\#.*\[(.*)\] ]]; then
+        if  [[ "$status" =~ ^\#\#\ (.*) ]] && [ "$(git remote | wc -l)" -gt 0 ]; then
+            [[ "${BASH_REMATCH[1]}" != *"..."* ]] && has_upstream=false
+        fi
+        if [[ "$status" =~ ^\#\#.*\ \[(.*)\] ]]; then
             [[ "${BASH_REMATCH[1]}" == *"ahead"* ]] && [[ "${BASH_REMATCH[1]}" == *"behind"* ]] && remote_status_keys="⇕" && continue
             [[ "${BASH_REMATCH[1]}" == *"ahead"* ]] && remote_status_keys="⇡" && continue
             [[ "${BASH_REMATCH[1]}" == *"behind"* ]] && remote_status_keys="⇣" && continue
@@ -234,6 +238,9 @@ for dir in "${git_dirs[@]}"; do
     else
         num_additional_branches=$(( num_additional_branches - 1 ))
         output="${output};${text_bold}${text_yellow}${current_branch}${text_reset} (${origin_head}${text_reset})"
+    fi
+    if [ "$has_upstream" == false ]; then
+        output="${output} (no upstream)"
     fi
     if [[ $num_additional_branches -gt 0 ]]; then
         output="${output} (+${num_additional_branches})"
