@@ -233,14 +233,17 @@ for dir in "${git_dirs[@]}"; do
     output="${output}${repository_name};${status_keys}"
 
     # Construct branch output
-    if [ "$current_branch" = "$origin_head" ]; then
+    if [ "$current_branch" == "$origin_head" ]; then
         output="${output};${text_bold}${current_branch}${text_reset}"
     else
-        num_additional_branches=$(( num_additional_branches - 1 ))
-        output="${output};${text_bold}${text_yellow}${current_branch}${text_reset} (${origin_head}${text_reset})"
+        output="${output};${text_bold}${text_yellow}${current_branch}${text_reset}"
     fi
     if [ "$has_upstream" == false ]; then
-        output="${output} (no upstream)"
+        output="${output} ${text_blue}[no upstream]${text_reset}"
+    fi
+    if [ "$current_branch" != "$origin_head" ]; then
+        num_additional_branches=$(( num_additional_branches - 1 ))
+        output="${output} (${origin_head}${text_reset})"
     fi
     if [[ $num_additional_branches -gt 0 ]]; then
         output="${output} (+${num_additional_branches})"
