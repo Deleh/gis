@@ -52,7 +52,7 @@ while (( "$#" )); do
             exit 0
             ;;
         -*)
-            error "Unsupported option ${text_bold}$1${text_bold}"
+            error "Unsupported option ${text_bold}$1${text_reset}"
             ;;
         fetch)
             fetch=true
