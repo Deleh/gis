@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# install column
+sudo apt update
+sudo apt install bsdmainutils
+
 # Adds $1 to ~/.bashrc if not already present
 function _add_to_config {
     if ! grep "$1" ~/.bashrc > /dev/null; then
