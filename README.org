@@ -66,6 +66,7 @@ It was inspired by [[https://wiki.ros.org/wstool][wstool]], [[https://github.com
     ! - Local changes
     + - Staged changes
     - - File removed
+    » - File renamed
     = - Both modified
     ⇕ - Diverged from upstream
     ⇡ - Ahead upstream
@@ -84,6 +85,6 @@ It was inspired by [[https://wiki.ros.org/wstool][wstool]], [[https://github.com
   : git remote set-head origin -a
 
   Or set it manually to any branch with:
-  : git remote set-head origin <branch_name>  
+  : git remote set-head origin <branch_name>
 
   The number of additional local branches which are neither checked out, nor the =origin/HEAD= branch, is appended at the end of the branch output, e.g. =(+8)=.
