@@ -219,6 +219,7 @@ for dir in "${git_dirs[@]}"; do
     status_keys="${status_keys//D/-}"
     status_keys="${status_keys//M/!}"
     status_keys="${status_keys//U/=}"
+    status_keys="${status_keys//R/»}"
 
     # Update all status keys
     all_status_keys="${all_status_keys}${status_keys}"
@@ -261,6 +262,7 @@ if [[ "$all_status_keys" ]]; then
     [[ "$all_status_keys" == *"!"* ]] && echo "  ${text_bold}${text_red}!${text_reset} - Local changes"
     [[ "$all_status_keys" == *"+"* ]] && echo "  ${text_bold}${text_red}+${text_reset} - Staged changes"
     [[ "$all_status_keys" == *"-"* ]] && echo "  ${text_bold}${text_red}-${text_reset} - File removed"
+    [[ "$all_status_keys" == *"»"* ]] && echo "  ${text_bold}${text_red}»${text_reset} - File renamed"
     [[ "$all_status_keys" == *"="* ]] && echo "  ${text_bold}${text_red}=${text_reset} - Both modified"
     [[ "$all_status_keys" == *"⇕"* ]] && echo "  ${text_bold}${text_red}⇕${text_reset} - Diverged from upstream"
     [[ "$all_status_keys" == *"⇡"* ]] && echo "  ${text_bold}${text_red}⇡${text_reset} - Ahead upstream"
