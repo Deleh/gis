@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# Check 'column' dependency
+if ! command -v column &> /dev/null; then
+    echo "Command 'column' not available on the system, please make sure all dependencies are fulfilled."
+    exit 1
+fi
+
 # Adds $1 to ~/.bashrc if not already present
 function _add_to_config {
     if ! grep "$1" ~/.bashrc > /dev/null; then
