@@ -18,8 +18,8 @@ It was inspired by [[https://wiki.ros.org/wstool][wstool]], [[https://github.com
 
     COMMANDS
       fetch  Execute 'git fetch --prune --all' for all found repositories
-      pull   Execute 'git pull' for all found repositories which are behind
-             upstream, includes 'gis fetch'
+      pull   Execute 'git pull --recurse-submodules' for all found repositories
+             which are behind upstream, includes 'gis fetch'
 
     OPTIONS
       -p, --path  PATH  Use PATH for searching Git repositories
