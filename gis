@@ -89,6 +89,10 @@ fi
 # Find Git repositories
 git_dirs=()
 for path in "${paths[@]}"; do
+    # Throw error if search path is not a directory
+    [ ! -d "$path" ] && error "Search path ${text_bold}${path}${text_reset} is not a directory"
+
+    # Find all Git repositories
     OLDIFS=$IFS
     IFS=$'\n' read -r -d '' -a found_git_dirs < <(find "$path" -type d -name ".git" -exec dirname {} \; | sort)
     IFS=$OLDIFS
