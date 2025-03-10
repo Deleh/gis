@@ -248,7 +248,7 @@ for dir in "${git_dirs[@]}"; do
     fi
     if [ "$current_branch" != "$origin_head" ]; then
         num_additional_branches=$(( num_additional_branches - 1 ))
-        output="${output} (${origin_head}${text_reset})"
+        output="${output} (${origin_head})"
     fi
     if [[ $num_additional_branches -gt 0 ]]; then
         output="${output} (+${num_additional_branches})"
