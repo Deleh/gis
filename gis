@@ -183,7 +183,7 @@ for dir in "${git_dirs[@]}"; do
 
     # Get origin head
     if git symbolic-ref refs/remotes/origin/HEAD > /dev/null 2>&1; then
-        [[ $(git symbolic-ref refs/remotes/origin/HEAD) =~ \/([^\/]*)$ ]] &>/dev/null && origin_head="${BASH_REMATCH[1]}"
+        [[ $(git symbolic-ref refs/remotes/origin/HEAD) =~ refs/remotes/origin/(.*)$ ]] &>/dev/null && origin_head="${BASH_REMATCH[1]}"
     else
         origin_head="$current_branch"
     fi
