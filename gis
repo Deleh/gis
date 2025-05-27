@@ -231,9 +231,11 @@ for dir in "${git_dirs[@]}"; do
     # Construct key output
     if [[ "$status_keys" ]]; then
         if [[ "$status_keys" == "\$" ]]; then
+            # Only stash symbol: yellow brackets and symbol
             status_keys="${text_bold}${text_yellow}[${status_keys}]${text_reset}"
         else
-            status_keys="${text_bold}${text_red}[${status_keys}]${text_reset}"
+            # Mixed status: only $ yellow, rest red
+            status_keys="${text_bold}${text_red}[${status_keys//\$/${text_yellow}\$${text_red}}]${text_reset}"
         fi
     else
         status_keys="${text_bold}${text_green}[✓]${text_reset}"
