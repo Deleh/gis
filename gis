@@ -14,8 +14,12 @@ function print_usage {
 Usage: gis [OPTIONS] [COMMAND]
 
 Show a status summary of all Git repositories which are found recursively in
-current work directory. If the colon-separated environment variable \$GIS_PATH
-is set, the declared directories will be used instead.
+current work directory. The colon colon-separated environment variable
+\$GIS_PATH or the '-p' argument can be used to modify the search path.
+
+All 'fetch' and 'pull' operations are executed in parallel. The number of
+background jobs can be limited with the environment variable \$GIS_JOBS or the
+'-j' argument.
 
 COMMANDS
   fetch  Execute 'git fetch --prune --all' for all found repositories
@@ -23,6 +27,7 @@ COMMANDS
          which are behind upstream, includes 'gis fetch'
 
 OPTIONS
+  -j, --jobs  N     Limit 'fetch' and 'pull' commands to N parallel jobs
   -p, --path  PATH  Use PATH for searching Git repositories
   -h, --help        Show this help message and exit
 EOF
@@ -34,11 +39,37 @@ function error {
     exit 1
 }
 
+function execute_git_command_on_list {
+    IFS=";" read -r -a git_dirs <<< "$2"
+    for dir in "${git_dirs[@]}"; do
+        cd "$dir" || echo "Failed to cd into ${text_bold}${text_red}${dir}${text_reset}"
+
+        # Get repository name
+        repository_name=$(basename "$dir")
+
+        # Execute 'fetch' or 'pull'
+        if [ "$1" == "fetch" ]; then
+            git fetch --prune --all 1> /dev/null 2> >(trap 'kill $! 2> /dev/null' INT TERM; sed "s/^/${text_bold}${text_blue}${repository_name}${text_reset} /")
+        elif [ "$1" == "pull" ]; then
+            git pull --recurse-submodules > >(sed "s/^/${text_bold}${text_magenta}${repository_name}${text_reset} /")
+        fi
+    done
+}
+
 # Parse arguments
+jobs=0
 fetch=false
 pull=false
 while (( "$#" )); do
     case "$1" in
+        -j|--jobs)
+            if [ -n "$2" ] && [ "${2:0:1}" != "-" ]; then
+                jobs="$2"
+                shift 2
+            else
+                error "Argument for ${text_bold}$1${text_reset} is missing"
+            fi
+            ;;
         -p|--path)
             if [ -n "$2" ] && [ "${2:0:1}" != "-" ]; then
                 paths+=("$(realpath "$2")")
@@ -107,6 +138,18 @@ for path in "${paths[@]}"; do
     git_dirs+=("${found_git_dirs[@]}")
 done
 
+# Set default number of jobs if argument or $GIS_JOBS wasn't set
+if [ "$jobs" == 0 ]; then
+    if [ "$GIS_JOBS" ]; then
+        jobs="$GIS_JOBS"
+    else
+        jobs="${#git_dirs[@]}"
+    fi
+fi
+if ! [[ "$jobs" =~ ^[0-9]+$ ]]; then
+   error "Number of parallel jobs must be a positive number"
+fi
+
 # Fetch Git repositories
 if [ "$fetch" == true ]; then
 
@@ -117,17 +160,24 @@ if [ "$fetch" == true ]; then
     fi
     echo "${text_bold}${text_blue}Fetching${text_reset} ${#git_dirs[@]} repositor${suffix}"
 
-    for dir in "${git_dirs[@]}"; do
-        cd "$dir" || echo "Failed to cd into ${text_bold}${text_red}${dir}${text_reset}"
+    # Create n lists of repositories where n is the number of parallel jobs
+    declare -a fetch_lists
+    for i in "${!git_dirs[@]}"; do
+        list_index=$((i % jobs))
+        if [ "${fetch_lists[$list_index]}" == "" ]; then
+            fetch_lists[list_index]="${git_dirs[$i]}"
+        else
+            fetch_lists[list_index]="${fetch_lists[$list_index]};${git_dirs[$i]}"
+        fi
+    done
 
-        # Get repository name
-        repository_name=$(basename "$dir")
-
-        # Fetch all Git repositories in background
-        git fetch --prune --all 1> /dev/null 2> >(trap 'kill $! 2> /dev/null' INT TERM; sed "s/^/${text_bold}${text_blue}${repository_name}${text_reset} /") &
+    # Fetch all lists in background
+    for fetch_list in "${fetch_lists[@]}"; do
+        execute_git_command_on_list "fetch" "${fetch_list}" &
         fetch_pids+=("$!")
     done
 
+    # Wait for fetching of all lists
     for pid in "${fetch_pids[@]}"; do
         wait "$pid"
     done
@@ -154,17 +204,24 @@ if [ "$pull" == true ]; then
     fi
     echo "${text_bold}${text_magenta}Pulling${text_reset} ${#pull_dirs[@]} repositor${suffix}"
 
-    # Pull all Git repositories which are behind upstream in background
-    for dir in "${pull_dirs[@]}"; do
-        cd "$dir" || echo "Failed to cd into ${text_bold}${text_red}${dir}${text_reset}"
+    # Create n lists of repositories where n is the number of parallel jobs
+    declare -a pull_lists
+    for i in "${!pull_dirs[@]}"; do
+        list_index=$((i % jobs))
+        if [ "${pull_lists[$list_index]}" == "" ]; then
+            pull_lists[list_index]="${pull_dirs[$i]}"
+        else
+            pull_lists[list_index]="${pull_lists[$list_index]};${pull_dirs[$i]}"
+        fi
+    done
 
-        # Get repository name
-        repository_name=$(basename "$dir")
-
-        git pull --recurse-submodules > >(trap 'kill $! 2> /dev/null' INT TERM; sed "s/^/${text_bold}${text_magenta}${repository_name}${text_reset} /") &
+    # Pull all lists in background
+    for pull_list in "${pull_lists[@]}"; do
+        execute_git_command_on_list "pull" "${pull_list}" &
         pull_pids+=("$!")
     done
 
+    # Wait for pulling of all lists
     for pid in "${pull_pids[@]}"; do
         wait "$pid"
     done
