@@ -13,8 +13,12 @@ It was inspired by [[https://wiki.ros.org/wstool][wstool]], [[https://github.com
     Usage: gis [OPTIONS] [COMMAND]
 
     Show a status summary of all Git repositories which are found recursively in
-    current work directory. If the colon-separated environment variable $GIS_PATH
-    is set, the declared directories will be used instead.
+    current work directory. The colon colon-separated environment variable
+    $GIS_PATH or the '-p' argument can be used to modify the search path.
+
+    All 'fetch' and 'pull' operations are executed in parallel. The number of
+    background jobs can be limited with the environment variable $GIS_JOBS or the
+    '-j' argument.
 
     COMMANDS
       fetch  Execute 'git fetch --prune --all' for all found repositories
@@ -22,6 +26,7 @@ It was inspired by [[https://wiki.ros.org/wstool][wstool]], [[https://github.com
              which are behind upstream, includes 'gis fetch'
 
     OPTIONS
+      -j, --jobs  N     Limit 'fetch' and 'pull' commands to N parallel jobs
       -p, --path  PATH  Use PATH for searching Git repositories
       -h, --help        Show this help message and exit
   #+end_example
