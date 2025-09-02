@@ -52,7 +52,7 @@ function execute_git_command_on_list {
             output=$(git fetch --prune --all --porcelain &> >(sed "s/^/${text_bold}${text_blue}${repository_name}${text_reset} /"))
             [ "$?" != 0 ] && echo -e "${text_bold}${text_blue}${repository_name}${text_reset} ${text_bold}${text_red}ERROR${text_reset} while fetching\n${output}"
         elif [ "$1" == "pull" ]; then
-            git pull --recurse-submodules > >(sed "s/^/${text_bold}${text_magenta}${repository_name}${text_reset} /")
+            git pull --recurse-submodules &> >(sed "s/^/${text_bold}${text_magenta}${repository_name}${text_reset} /")
         fi
     done
 }
