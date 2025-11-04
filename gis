@@ -8,6 +8,18 @@ text_green=$'\e[32m'
 text_magenta=$'\e[35m'
 text_red=$'\e[31m'
 text_yellow=$'\e[33m'
+stash_symbol=$'\xF0\x9F\x92\xA9'                # 💩
+untracked_symbol=$'\xF0\x9F\x8E\x81'            # 🎁
+changes_symbol=$'\xF0\x9F\x94\xA8'              # 🔨
+removed_symbol=$'\xF0\x9F\x97\x91\xEF\xB8\x8F'  # 🗑️
+success_symbol=$'\xF0\x9F\x98\x80'              # 😀
+staged_symbol=$'\xF0\x9F\xA4\x9F'               # 🤟
+renamed_symbol=$'\xF0\x9F\x92\x8B'              # 💋
+both_modified_symbol=$'\xF0\x9F\x99\x8C'        # 🙌
+diverged_symbol=$'\xF0\x9F\x8D\xBA'             # 🍺
+ahead_symbol=$'\xF0\x9F\x92\xAA'                # 💪
+behind_symbol=$'\xF0\x9F\x91\x80'               # 👀
+gone_symbol=$'\xF0\x9F\x94\x8D'                 # 🔍
 
 function print_usage {
     cat <<EOF
@@ -254,7 +266,7 @@ for dir in "${git_dirs[@]}"; do
 
     # Check stash
     if [[ $(git stash list) ]]; then
-        status_keys="${status_keys}\$"
+        status_keys="${status_keys}${stash_symbol}"
     fi
 
     # Get status
@@ -265,10 +277,10 @@ for dir in "${git_dirs[@]}"; do
             [[ "${BASH_REMATCH[1]}" != *"..."* ]] && has_upstream=false
         fi
         if [[ "$status" =~ ^\#\#.*\ \[(.*)\] ]]; then
-            [[ "${BASH_REMATCH[1]}" == *"ahead"* ]] && [[ "${BASH_REMATCH[1]}" == *"behind"* ]] && remote_status_keys="⇕" && continue
-            [[ "${BASH_REMATCH[1]}" == *"ahead"* ]] && remote_status_keys="⇡" && continue
-            [[ "${BASH_REMATCH[1]}" == *"behind"* ]] && remote_status_keys="⇣" && continue
-            [[ "${BASH_REMATCH[1]}" == *"gone"* ]] && remote_status_keys="✗" && continue
+            [[ "${BASH_REMATCH[1]}" == *"ahead"* ]] && [[ "${BASH_REMATCH[1]}" == *"behind"* ]] && remote_status_keys="${diverged_symbol}" && continue
+            [[ "${BASH_REMATCH[1]}" == *"ahead"* ]] && remote_status_keys="${ahead_symbol}" && continue
+            [[ "${BASH_REMATCH[1]}" == *"behind"* ]] && remote_status_keys="${behind_symbol}" && continue
+            [[ "${BASH_REMATCH[1]}" == *"gone"* ]] && remote_status_keys="${gone_symbol}" && continue
         elif [[ "$status" != "#"* ]]; then
             status_char="${status:0:1}"
             [[ "$status_keys" != *"$status_char"* ]] && status_keys="${status_keys}${status_char}"
@@ -277,26 +289,27 @@ for dir in "${git_dirs[@]}"; do
     status_keys="${status_keys}${remote_status_keys}"
 
     # Beautify status
-    status_keys="${status_keys//A/+}"
-    status_keys="${status_keys//D/-}"
-    status_keys="${status_keys//M/!}"
-    status_keys="${status_keys//U/=}"
-    status_keys="${status_keys//R/»}"
+    status_keys="${status_keys//A/${staged_symbol}}"
+    status_keys="${status_keys//D/${removed_symbol}}"
+    status_keys="${status_keys//M/${changes_symbol}}"
+    status_keys="${status_keys//U/${both_modified_symbol}}"
+    status_keys="${status_keys//R/${renamed_symbol}}"
+    status_keys="${status_keys//\?/${untracked_symbol}}"
 
     # Update all status keys
     all_status_keys="${all_status_keys}${status_keys}"
 
     # Construct key output
     if [[ "$status_keys" ]]; then
-        if [[ "$status_keys" == "\$" ]]; then
-            # Only stash symbol: yellow brackets and symbol
-            status_keys="${text_bold}${text_yellow}[${status_keys}]${text_reset}"
+        if [[ "$status_keys" == "$stash_symbol" ]]; then
+            # Only stash symbol: highlight in yellow
+            status_keys="${text_bold}${text_yellow}${status_keys}${text_reset}"
         else
-            # Mixed status: only $ yellow, rest red
-            status_keys="${text_bold}${text_red}[${status_keys//\$/${text_yellow}\$${text_red}}]${text_reset}"
+            # Mixed status: only stash symbol yellow, rest red
+            status_keys="${text_bold}${text_red}${status_keys//${stash_symbol}/${text_yellow}${stash_symbol}${text_red}}${text_reset}"
         fi
     else
-        status_keys="${text_bold}${text_green}[✓]${text_reset}"
+        status_keys="${text_bold}${text_green}${success_symbol}${text_reset}"
     fi
 
     output="${output}${repository_name};${status_keys}"
@@ -325,17 +338,17 @@ done
 # Print keys
 if [[ "$all_status_keys" ]]; then
     echo "${text_bold}Status${text_reset}"
-    [[ "$all_status_keys" == *"\$"* ]] && echo "  ${text_bold}${text_yellow}\$${text_reset} - Dirty stash"
-    [[ "$all_status_keys" == *"?"* ]] && echo "  ${text_bold}${text_red}?${text_reset} - Untracked files"
-    [[ "$all_status_keys" == *"!"* ]] && echo "  ${text_bold}${text_red}!${text_reset} - Local changes"
-    [[ "$all_status_keys" == *"+"* ]] && echo "  ${text_bold}${text_red}+${text_reset} - Staged changes"
-    [[ "$all_status_keys" == *"-"* ]] && echo "  ${text_bold}${text_red}-${text_reset} - File removed"
-    [[ "$all_status_keys" == *"»"* ]] && echo "  ${text_bold}${text_red}»${text_reset} - File renamed"
-    [[ "$all_status_keys" == *"="* ]] && echo "  ${text_bold}${text_red}=${text_reset} - Both modified"
-    [[ "$all_status_keys" == *"⇕"* ]] && echo "  ${text_bold}${text_red}⇕${text_reset} - Diverged from upstream"
-    [[ "$all_status_keys" == *"⇡"* ]] && echo "  ${text_bold}${text_red}⇡${text_reset} - Ahead upstream"
-    [[ "$all_status_keys" == *"⇣"* ]] && echo "  ${text_bold}${text_red}⇣${text_reset} - Behind upstream"
-    [[ "$all_status_keys" == *"✗"* ]] && echo "  ${text_bold}${text_red}✗${text_reset} - Upstream gone"
+    [[ "$all_status_keys" == *"${stash_symbol}"* ]] && echo "  ${text_bold}${text_yellow}${stash_symbol}${text_reset} - Dirty stash"
+    [[ "$all_status_keys" == *"${untracked_symbol}"* ]] && echo "  ${text_bold}${text_red}${untracked_symbol}${text_reset} - Untracked files"
+    [[ "$all_status_keys" == *"${changes_symbol}"* ]] && echo "  ${text_bold}${text_red}${changes_symbol}${text_reset} - Local changes"
+    [[ "$all_status_keys" == *"${staged_symbol}"* ]] && echo "  ${text_bold}${text_red}${staged_symbol}${text_reset} - Staged changes"
+    [[ "$all_status_keys" == *"${removed_symbol}"* ]] && echo "  ${text_bold}${text_red}${removed_symbol}${text_reset} - File removed"
+    [[ "$all_status_keys" == *"${renamed_symbol}"* ]] && echo "  ${text_bold}${text_red}${renamed_symbol}${text_reset} - File renamed"
+    [[ "$all_status_keys" == *"${both_modified_symbol}"* ]] && echo "  ${text_bold}${text_red}${both_modified_symbol}${text_reset} - Both modified"
+    [[ "$all_status_keys" == *"${diverged_symbol}"* ]] && echo "  ${text_bold}${text_red}${diverged_symbol}${text_reset} - Diverged from upstream"
+    [[ "$all_status_keys" == *"${ahead_symbol}"* ]] && echo "  ${text_bold}${text_red}${ahead_symbol}${text_reset} - Ahead upstream"
+    [[ "$all_status_keys" == *"${behind_symbol}"* ]] && echo "  ${text_bold}${text_red}${behind_symbol}${text_reset} - Behind upstream"
+    [[ "$all_status_keys" == *"${gone_symbol}"* ]] && echo "  ${text_bold}${text_red}${gone_symbol}${text_reset} - Upstream gone"
     echo
 fi
 echo -e "$output" | column -s ";" -t
