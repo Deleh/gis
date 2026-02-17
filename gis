@@ -25,6 +25,8 @@ COMMANDS
   fetch  Execute 'git fetch --prune --all' for all found repositories
   pull   Execute 'git pull --recurse-submodules' for all found repositories
          which are behind upstream, includes 'gis fetch'
+  main   Check out the default branch for all found repositories
+         which have no uncommitted changes
 
 OPTIONS
   -j, --jobs  N     Limit 'fetch' and 'pull' commands to N parallel jobs
@@ -61,6 +63,7 @@ function execute_git_command_on_list {
 jobs=0
 fetch=false
 pull=false
+checkout_main=false
 while (( "$#" )); do
     case "$1" in
         -j|--jobs)
@@ -100,6 +103,13 @@ while (( "$#" )); do
             ;;
         p*)
             error "Unsupported command ${text_bold}$1${text_reset}, did you mean ${text_bold}pull${text_reset}?"
+            ;;
+        main)
+            checkout_main=true
+            shift
+            ;;
+        m*)
+            error "Unsupported command ${text_bold}$1${text_reset}, did you mean ${text_bold}main${text_reset}?"
             ;;
         *)
             error "Unsupported command ${text_bold}$1${text_reset}"
@@ -225,6 +235,41 @@ if [ "$pull" == true ]; then
     # Wait for pulling of all lists
     for pid in "${pull_pids[@]}"; do
         wait "$pid"
+    done
+    echo
+fi
+
+# Check out default branch
+if [ "$checkout_main" == true ]; then
+    for dir in "${git_dirs[@]}"; do
+        cd "$dir" || continue
+        repository_name=$(basename "$dir")
+
+        # Determine default branch
+        if git symbolic-ref refs/remotes/origin/HEAD > /dev/null 2>&1; then
+            [[ $(git symbolic-ref refs/remotes/origin/HEAD) =~ refs/remotes/origin/(.*)$ ]] && origin_head="${BASH_REMATCH[1]}"
+        else
+            origin_head="main"
+        fi
+
+        # Skip if already on default branch
+        current_branch=$(git branch --show-current)
+        if [ "$current_branch" == "$origin_head" ]; then
+            continue
+        fi
+
+        # Skip if repo has local changes (staged or unstaged tracked files)
+        if ! git diff --quiet 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then
+            echo "${text_bold}${text_yellow}${repository_name}${text_reset} has local changes, skipping checkout"
+            continue
+        fi
+
+        # Checkout default branch
+        if git checkout "$origin_head" 2>/dev/null; then
+            echo "${text_bold}${text_green}${repository_name}${text_reset} checked out ${text_bold}${origin_head}${text_reset}"
+        else
+            echo "${text_bold}${text_red}${repository_name}${text_reset} failed to check out ${text_bold}${origin_head}${text_reset}" >&2
+        fi
     done
     echo
 fi

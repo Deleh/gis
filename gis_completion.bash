@@ -1,6 +1,6 @@
 function _gis_completion {
     args=" -h -p --help --path "
-    commands=" fetch pull "
+    commands=" fetch main pull "
     cur=${COMP_WORDS[COMP_CWORD]}
     prev=${COMP_WORDS[COMP_CWORD-1]}
 
