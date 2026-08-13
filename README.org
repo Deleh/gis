@@ -24,6 +24,10 @@ It was inspired by [[https://wiki.ros.org/wstool][wstool]], [[https://github.com
     fetch  Execute 'git fetch --prune --all' for all found repositories
     pull   Execute 'git pull --recurse-submodules' for all found repositories
              which are behind upstream, includes 'gis fetch'
+    switch [BRANCH]
+           Check out BRANCH for all found repositories which have no
+           uncommitted changes. Defaults to 'default', which resolves to
+           the default branch of each repository.
 
   OPTIONS
     -j, --jobs  N     Limit 'fetch' and 'pull' commands to N parallel jobs
