@@ -25,6 +25,10 @@ COMMANDS
   fetch  Execute 'git fetch --prune --all' for all found repositories
   pull   Execute 'git pull --recurse-submodules' for all found repositories
          which are behind upstream, includes 'gis fetch'
+  switch [BRANCH]
+         Check out BRANCH for all found repositories which have no
+         uncommitted changes. Defaults to 'default', which resolves to
+         the default branch of each repository.
 
 OPTIONS
   -j, --jobs  N     Limit 'fetch' and 'pull' commands to N parallel jobs
@@ -61,6 +65,7 @@ function execute_git_command_on_list {
 jobs=0
 fetch=false
 pull=false
+switch_branch=""
 while (( "$#" )); do
     case "$1" in
         -j|--jobs)
@@ -100,6 +105,18 @@ while (( "$#" )); do
             ;;
         p*)
             error "Unsupported command ${text_bold}$1${text_reset}, did you mean ${text_bold}pull${text_reset}?"
+            ;;
+        switch)
+            if [ -n "$2" ] && [ "${2:0:1}" != "-" ]; then
+                switch_branch="$2"
+                shift 2
+            else
+                switch_branch="default"
+                shift
+            fi
+            ;;
+        s*)
+            error "Unsupported command ${text_bold}$1${text_reset}, did you mean ${text_bold}switch${text_reset}?"
             ;;
         *)
             error "Unsupported command ${text_bold}$1${text_reset}"
@@ -225,6 +242,44 @@ if [ "$pull" == true ]; then
     # Wait for pulling of all lists
     for pid in "${pull_pids[@]}"; do
         wait "$pid"
+    done
+    echo
+fi
+
+# Switch branches
+if [ -n "$switch_branch" ]; then
+    for dir in "${git_dirs[@]}"; do
+        cd "$dir" || continue
+        repository_name=$(basename "$dir")
+
+        # Resolve 'default' to the default branch of the repository
+        branch="$switch_branch"
+        if [ "$branch" == "default" ]; then
+            if [[ $(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null) =~ refs/remotes/origin/(.*)$ ]]; then
+                branch="${BASH_REMATCH[1]}"
+            else
+                echo "${text_bold}${text_yellow}${repository_name}${text_reset} has no default branch, skipping"
+                continue
+            fi
+        fi
+
+        # Skip if already on the branch
+        if [ "$(git branch --show-current)" == "$branch" ]; then
+            continue
+        fi
+
+        # Skip if repository has local changes (staged or unstaged tracked files)
+        if ! git diff --quiet || ! git diff --cached --quiet; then
+            echo "${text_bold}${text_yellow}${repository_name}${text_reset} has local changes, skipping"
+            continue
+        fi
+
+        # Check out branch
+        if output=$(git checkout "$branch" 2>&1); then
+            echo "${text_bold}${text_green}${repository_name}${text_reset} checked out ${text_bold}${branch}${text_reset}"
+        else
+            echo "${text_bold}${text_red}${repository_name}${text_reset} failed to check out ${text_bold}${branch}${text_reset}: ${output}" >&2
+        fi
     done
     echo
 fi

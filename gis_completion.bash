@@ -1,8 +1,14 @@
 function _gis_completion {
     args=" -h -p --help --path "
-    commands=" fetch pull "
+    commands=" fetch pull switch "
     cur=${COMP_WORDS[COMP_CWORD]}
     prev=${COMP_WORDS[COMP_CWORD-1]}
+
+    # Handle branch completion
+    if [[ ${prev} == switch ]]; then
+        COMPREPLY=( $(compgen -W "default $(git branch --format='%(refname:short)' 2> /dev/null)" -- "${cur}") )
+        return
+    fi
 
     # Handle path completion
     if [[ ${prev} == -p ]] || [[ ${prev} == --path ]]; then
